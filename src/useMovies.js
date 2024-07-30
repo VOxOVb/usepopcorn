@@ -6,7 +6,7 @@ export function useMovies(query) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchMovies = useCallback(debounce(async (query, controller) => {
+  const fetchMovies = useCallback(((query, controller) => {debounce(async (query, controller) => {
     try {
       setIsLoading(true);
       setError("");
@@ -32,7 +32,7 @@ export function useMovies(query) {
     } finally {
       setIsLoading(false);
     }
-  }, 500), [])
+  }, 500)}), [])
   useEffect(() => {
     const controller = new AbortController();
     if (query.length < 3) {
@@ -43,6 +43,6 @@ export function useMovies(query) {
     // handleCloseMovie();
     fetchMovies(query, controller);
     return () => controller.abort();
-  }, [query]);
+  }, [query, fetchMovies]);
   return { movies, isLoading, error };
 }
