@@ -6,7 +6,7 @@ export function useMovies(query) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchMovies = useCallback(((query, controller) => {debounce(async (query, controller) => {
+  const fetchMovies = useCallback((() => {debounce(async (query, controller) => {
     try {
       setIsLoading(true);
       setError("");
