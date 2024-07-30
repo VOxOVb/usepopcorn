@@ -5,8 +5,9 @@ export function useMovies(query) {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const fetchMovies = useCallback((() => {debounce(async (query, controller) => {
+  
+// eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetchMovies = useCallback(debounce(async (query, controller) => {
     try {
       setIsLoading(true);
       setError("");
@@ -32,7 +33,7 @@ export function useMovies(query) {
     } finally {
       setIsLoading(false);
     }
-  }, 500)}), [])
+  }, 500), []);
   useEffect(() => {
     const controller = new AbortController();
     if (query.length < 3) {
