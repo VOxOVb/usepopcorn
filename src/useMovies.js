@@ -1,49 +1,48 @@
-import debounce from "lodash.debounce";
-import { useState, useEffect, useCallback } from "react";
+import { useDebounce } from "@uidotdev/usehooks";
+import { useState, useEffect } from "react";
 const KEY = "cdb6401f";
 export function useMovies(query) {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const debounceQuery = useDebounce(query, 350);
   
-// eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchMovies = useCallback(debounce(async (query, controller) => {
-    try {
-      setIsLoading(true);
-      setError("");
-      const res = await fetch(
-        `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
-        { controller: controller.signal }
-      );
-
-      if (!res.ok)
-        throw new Error("Something went wrong with fetching movies");
-
-      const data = await res.json();
-
-      if (data.Response === "False") throw new Error("Movie not found");
-
-      setMovies(data.Search);
-      setError("");
-    } catch (err) {
-      if (err.name !== "AbortError") {
-        console.log(err.message);
-        setError(err.message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, 500), []);
   useEffect(() => {
     const controller = new AbortController();
-    if (query.length < 3) {
+    async function fetchMovies() {
+      try {
+        setIsLoading(true);
+        setError("");
+        const res = await fetch(
+          `https://www.omdbapi.com/?apikey=${KEY}&s=${debounceQuery}`,
+          { controller: controller.signal }
+        );
+
+        if (!res.ok)
+          throw new Error("Something went wrong with fetching movies");
+
+        const data = await res.json();
+
+        if (data.Response === "False") throw new Error("Movie not found");
+
+        setMovies(data.Search);
+        setError("");
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.log(err.message);
+          setError(err.message);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    if (debounceQuery.length < 3) {
       setMovies([]);
       setError("");
       return;
     }
-    // handleCloseMovie();
-    fetchMovies(query, controller);
+    fetchMovies();
     return () => controller.abort();
-  }, [query, fetchMovies]);
+  }, [debounceQuery]);
   return { movies, isLoading, error };
 }
